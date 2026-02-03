@@ -11,6 +11,8 @@
     cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.12";
     nixpkgs.follows = "cargo2nix/nixpkgs";
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    geni.url = "github:emilpriver/geni";
+    geni.inputs.nixpkgs.follows = "unstable";
   };
 
   outputs = inputs@{ flake-parts, ... }:
@@ -24,7 +26,14 @@
               inherit system;
               overlays = [ inputs.cargo2nix.overlays.default ];
             };
-          unstable = import inputs.unstable { inherit system; };
+          unstable = import inputs.unstable { 
+            inherit system;
+            overlays = [
+              (final: prev: {
+                geni = inputs.geni.packages.${system}.geni;
+              })
+            ];
+          };
           rustPkgs = p.rustBuilder.makePackageSet {
             rustVersion = "1.85.0";
             packageFun = import ./Cargo.nix;
@@ -35,6 +44,7 @@
               inputs.cargo2nix.packages.${system}.cargo2nix
               unstable.turso
               unstable.turso-cli
+              unstable.geni
             ];
           };
 

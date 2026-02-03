@@ -10,6 +10,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.12";
     nixpkgs.follows = "cargo2nix/nixpkgs";
+    unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
   outputs = inputs@{ flake-parts, ... }:
@@ -23,27 +24,35 @@
               inherit system;
               overlays = [ inputs.cargo2nix.overlays.default ];
             };
+          unstable = import inputs.unstable { inherit system; };
           rustPkgs = p.rustBuilder.makePackageSet {
             rustVersion = "1.83.0";
             packageFun = import ./Cargo.nix;
           };
 
           workspaceShell = rustPkgs.workspaceShell {
-            packages = [ inputs.cargo2nix.packages.${system}.cargo2nix ];
+            packages = [
+              inputs.cargo2nix.packages.${system}.cargo2nix
+              unstable.turso
+              unstable.turso-cli
+            ];
           };
 
-        phreaky = rustPkgs.workspace.phreaky {};
+          phreaky = rustPkgs.workspace.phreaky { };
         in
         {
           packages.default = phreaky;
           devShells.default = workspaceShell;
           apps = {
             default = { type = "app"; program = "${ pkgs.lib.getExe' phreaky "phreaky" }"; };
-            bootstrap = { type = "app"; program = (pkgs.writeShellScriptBin "bootstrap" ''
-              ${p.cargo}/bin/cargo generate-lockfile
-              ${inputs.cargo2nix.packages.${system}.cargo2nix}/bin/cargo2nix
-              ${pkgs.git}/bin/git add Cargo.nix Cargo.lock
-            ''); };
+            bootstrap = {
+              type = "app";
+              program = (pkgs.writeShellScriptBin "bootstrap" ''
+                ${p.cargo}/bin/cargo generate-lockfile
+                ${inputs.cargo2nix.packages.${system}.cargo2nix}/bin/cargo2nix
+                ${pkgs.git}/bin/git add Cargo.nix Cargo.lock
+              '');
+            };
           };
         };
       flake = { };

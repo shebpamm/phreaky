@@ -32,10 +32,10 @@ impl Config {
         CONFIG.get_or_init(|| {
             dotenv().ok();
 
-            let db_url = std::env::var("TURSO_DATABASE_URL")
-                .expect("TURSO_DATABASE_URL must be set in .env file");
-            let db_token = std::env::var("TURSO_AUTH_TOKEN")
-                .expect("TURSO_AUTH_TOKEN must be set in .env file");
+            let db_url = std::env::var("DATABASE_URL")
+                .expect("DATABASE_URL must be set in .env file");
+            let db_token = std::env::var("DATABASE_TOKEN")
+                .expect("DATABASE_TOKEN must be set in .env file");
 
             let server_host = std::env::var("SERVER_HOST")
                 .unwrap_or_else(|_| "0.0.0.0".to_string());

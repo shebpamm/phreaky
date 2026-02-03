@@ -8,6 +8,12 @@ use clap::Parser;
 use crate::cli::Cli;
 
 fn main() {
+    tracing_subscriber::fmt()
+        .with_ansi(true)
+        .init();
+
+    color_eyre::install().unwrap();
+
     let args = Cli::parse();
 
     match args.command {

@@ -1,18 +1,15 @@
-mod config;
 mod cli;
+mod server;
 
 use clap::Parser;
-use crate::config::Config;
 use crate::cli::Cli;
 
 fn main() {
-    let config = Config::get();
-
     let args = Cli::parse();
 
     match args.command {
         Some(cli::Commands::Serve) => {
-            println!("Starting server...");
+            server::serve().unwrap();
         }
         None => {
             println!("No command provided. Use --help for more information.");

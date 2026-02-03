@@ -6,6 +6,9 @@ description = "League LP tracker"
 license = "MIT"
 
 [dependencies]
+axum = "0.8.8"
 clap = { version = "4.5.56", features = ["derive"] }
+color-eyre = "0.6.5"
 dotenv = "0.15.0"
 libsql = "0.9.29"
+tokio = "1.49.0"

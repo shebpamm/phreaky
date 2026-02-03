@@ -1,9 +1,11 @@
 [package]
 name = "phreaky"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 description = "League LP tracker"
 license = "MIT"
 
 [dependencies]
+clap = { version = "4.5.56", features = ["derive"] }
+dotenv = "0.15.0"
 libsql = "0.9.29"

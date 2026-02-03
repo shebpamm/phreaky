@@ -1,3 +1,8 @@
+mod config;
+use crate::config::Config;
+
 fn main() {
-    println!("Hello, world!");
+    let config = Config::get();
+
+    println!("db config: {:?}", config.db);
 }

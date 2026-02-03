@@ -3,12 +3,14 @@ use color_eyre::eyre::Result;
 use axum::Router;
 
 use crate::config::Config;
+use crate::api;
 
 fn create_router() -> Router {
     use axum::{routing::get, Router};
 
     let router = Router::new()
-        .route("/", get(|| async { "Hello, World!" }));
+        .route("/", get(|| async { "Hello, World!" }))
+        .nest("/api", api::get_routes());
 
     router
 }

@@ -1,6 +1,8 @@
 mod cli;
 mod server;
 mod config;
+mod api;
+mod db;
 
 use clap::Parser;
 use crate::cli::Cli;

@@ -45,13 +45,14 @@ pub struct PlayerInfo {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayerStats {
-    queue_type: String,
-    tier: String,
-    rank: String,
-    league_points: u32,
-    wins: u32,
-    losses: u32,
-    hot_streak: bool,
+    pub queue_type: String,
+    pub puuid: String,
+    pub tier: String,
+    pub rank: String,
+    pub league_points: u32,
+    pub wins: u32,
+    pub losses: u32,
+    pub hot_streak: bool,
 }
 
 fn build_client() -> reqwest::Client {

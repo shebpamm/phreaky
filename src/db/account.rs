@@ -82,6 +82,8 @@ pub async fn add_account(username: &str, tagline: &str, region: &str) -> Result<
 
     let account = crate::riot::get_player_info(username, tagline).await?;
 
+    let region = region.to_uppercase();
+
     // Check if account already exists
     let mut existing_account = conn.query(
         "SELECT id FROM accounts WHERE puuid = ?",

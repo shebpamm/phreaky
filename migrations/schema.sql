@@ -14,3 +14,19 @@ CREATE TABLE accounts (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+
+    queue_type TEXT NOT NULL,
+    tier TEXT NOT NULL,
+    rank TEXT NOT NULL,
+    league_points INTEGER NOT NULL,
+    wins INTEGER NOT NULL,
+    losses INTEGER NOT NULL,
+    hot_streak INTEGER NOT NULL,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (account_id) REFERENCES accounts(id)
+);

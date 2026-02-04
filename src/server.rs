@@ -41,7 +41,7 @@ async fn serve() ->  Result<()> {
     });
 
     let worker_handle = tokio::spawn(async move {
-        background_worker().await;
+        crate::worker::background_worker().await.unwrap();
     });
 
     println!("Server running at http://{}", config.server.address());
@@ -63,10 +63,4 @@ async fn serve() ->  Result<()> {
     }
 
     Ok(())
-}
-
-async fn background_worker() {
-    loop {
-        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
-    }
 }

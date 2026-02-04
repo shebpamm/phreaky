@@ -8,6 +8,7 @@ pub struct Config {
     pub db: DatabaseConfig,    
     pub server: ServerConfig,
     pub riot: RiotConfig,
+    pub worker: WorkerConfig,
 }
 
 #[derive(Debug)]
@@ -33,6 +34,11 @@ impl ServerConfig {
     }
 }
 
+#[derive(Debug)]
+pub struct WorkerConfig {
+    pub interval_seconds: u64,
+}
+
 impl Config {
     pub fn get() -> &'static Config {
         CONFIG.get_or_init(|| {
@@ -54,6 +60,11 @@ impl Config {
             let riot_token = std::env::var("RIOT_API_KEY")
                 .expect("RIOT_API_KEY must be set in .env file");
 
+            let interval_seconds = std::env::var("WORKER_INTERVAL_SECONDS")
+                .unwrap_or_else(|_| "60".to_string())
+                .parse::<u64>()
+                .expect("WORKER_INTERVAL_SECONDS must be a valid u64");
+
             Config {
                 db: DatabaseConfig {
                     url: db_url,
@@ -65,6 +76,9 @@ impl Config {
                 },
                 riot: RiotConfig {
                     token: riot_token,
+                },
+                worker: WorkerConfig {
+                    interval_seconds,
                 },
             }
         })

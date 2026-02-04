@@ -5,6 +5,7 @@ mod api;
 mod db;
 mod riot;
 mod client;
+mod worker;
 
 use clap::Parser;
 use crate::cli::Cli;

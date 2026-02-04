@@ -46,3 +46,19 @@ pub async fn list_accounts() -> Result<Vec<Account>> {
 
     Ok(accounts)
 }
+
+pub async fn get_account(puuid: &str) -> Result<Account> {
+    let conn = connection::get_db().await?;
+
+    let mut rows = conn.query(
+        "SELECT id, puuid, username, tagline, region, created_at, updated_at FROM accounts WHERE puuid = ?",
+        params![puuid],
+    ).await?;
+
+    if let Some(row) = rows.next().await? {
+        let account: Account = row.try_into()?;
+        Ok(account)
+    } else {
+        Err(color_eyre::eyre::eyre!("Account with Player UUID {} not found", puuid))
+    }
+}

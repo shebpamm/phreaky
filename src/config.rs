@@ -7,6 +7,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 pub struct Config {
     pub db: DatabaseConfig,    
     pub server: ServerConfig,
+    pub riot: RiotConfig,
 }
 
 #[derive(Debug)]
@@ -19,6 +20,11 @@ pub struct DatabaseConfig {
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
+}
+
+#[derive(Debug)]
+pub struct RiotConfig {
+    pub token: String,
 }
 
 impl ServerConfig {
@@ -45,6 +51,9 @@ impl Config {
                 .parse::<u16>()
                 .expect("SERVER_PORT must be a valid u16");
 
+            let riot_token = std::env::var("RIOT_API_KEY")
+                .expect("RIOT_API_KEY must be set in .env file");
+
             Config {
                 db: DatabaseConfig {
                     url: db_url,
@@ -53,6 +62,9 @@ impl Config {
                 server: ServerConfig {
                     host: server_host,
                     port: server_port,
+                },
+                riot: RiotConfig {
+                    token: riot_token,
                 },
             }
         })

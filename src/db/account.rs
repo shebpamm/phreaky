@@ -62,3 +62,16 @@ pub async fn get_account(puuid: &str) -> Result<Account> {
         Err(color_eyre::eyre::eyre!("Account with Player UUID {} not found", puuid))
     }
 }
+
+pub async fn add_account(username: &str, tagline: &str, region: &str) -> Result<Account> {
+    let conn = connection::get_db().await?;
+
+    let account = crate::riot::get_player_info(username, tagline).await?;
+
+    conn.execute(
+        "INSERT INTO accounts (puuid, username, tagline, region) VALUES (?, ?, ?, ?)",
+        params![account.puuid.clone(), account.username, account.tagline, region],
+    ).await?;
+
+    get_account(&account.puuid).await
+}

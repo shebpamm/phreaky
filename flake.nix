@@ -45,6 +45,7 @@
               unstable.turso
               unstable.turso-cli
               unstable.geni
+              unstable.hurl
             ];
           };
 

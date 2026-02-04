@@ -3,6 +3,7 @@ mod server;
 mod config;
 mod api;
 mod db;
+mod riot;
 
 use clap::Parser;
 use crate::cli::Cli;

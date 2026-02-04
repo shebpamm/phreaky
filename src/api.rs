@@ -1,29 +1,59 @@
 use axum::{Router, http::StatusCode, response::IntoResponse};
-use color_eyre::eyre::{Result, ErrReport};
+use color_eyre::eyre::ErrReport;
+use crate::db::account::AccountError;
 
 pub mod account;
 
 #[derive(Debug)]
-pub struct ApiError(pub ErrReport); 
+pub enum ApiError {
+    Internal(ErrReport),
+    Account(AccountError),
+}
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         tracing::error!("API Error: {:?}", self);
 
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Internal Server Error: {}", self.0),
-        ).into_response()
+        match self {
+            ApiError::Account(account_error) => match account_error {
+                AccountError::NotFound(msg) => (
+                    StatusCode::NOT_FOUND,
+                    format!("Not Found: {}", msg),
+                ).into_response(),
+                AccountError::AlreadyExists(msg) => (
+                    StatusCode::CONFLICT,
+                    format!("Account already exists: {}", msg),
+                ).into_response(),
+                AccountError::InternalError(err) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Internal Server Error: {}", err),
+                ).into_response(),
+                AccountError::DatabaseError(err) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Database Error: {}", err),
+                ).into_response(),
+            },
+            ApiError::Internal(err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Internal Server Error: {}", err),
+            ).into_response(),
+    }
     }
 }
 
 impl From<ErrReport> for ApiError {
     fn from(err: ErrReport) -> Self {
-        ApiError(err)
+        ApiError::Internal(err)
     }
 }
 
-type ApiResult<T> = Result<T, ApiError>;
+impl From<AccountError> for ApiError {
+    fn from(err: AccountError) -> Self {
+        ApiError::Account(err)
+    }
+}
+
+type ApiResult<T> = std::result::Result<T, ApiError>;
 
 pub fn get_routes() -> Router {
     let app = Router::new()

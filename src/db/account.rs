@@ -1,10 +1,24 @@
 use chrono::{Utc, DateTime};
-use color_eyre::eyre::Result;
 use libsql::params;
 use serde::{Serialize, Deserialize};
+use thiserror::Error;
 
 use crate::db::connection;
 use crate::db::utils;
+
+#[derive(Error, Debug)]
+pub enum AccountError {
+    #[error("Account with Player UUID {0} not found")]
+    NotFound(String),
+    #[error("Account with Player UUID {0} already exists")]
+    AlreadyExists(String),
+    #[error("Internal error: {0}")]
+    InternalError(#[from] color_eyre::eyre::Report),
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] libsql::Error),
+}
+
+type Result<T> = std::result::Result<T, AccountError>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Account {
@@ -20,7 +34,7 @@ pub struct Account {
 impl TryFrom<libsql::Row> for Account {
     type Error = color_eyre::eyre::Report;
 
-    fn try_from(row: libsql::Row) -> Result<Self, Self::Error> {
+    fn try_from(row: libsql::Row) -> std::result::Result<Self, Self::Error> {
         Ok(Account {
             id: row.get(0)?,
             puuid: row.get(1)?,
@@ -59,7 +73,7 @@ pub async fn get_account(puuid: &str) -> Result<Account> {
         let account: Account = row.try_into()?;
         Ok(account)
     } else {
-        Err(color_eyre::eyre::eyre!("Account with Player UUID {} not found", puuid))
+        Err(AccountError::NotFound(puuid.to_string()))
     }
 }
 
@@ -67,6 +81,16 @@ pub async fn add_account(username: &str, tagline: &str, region: &str) -> Result<
     let conn = connection::get_db().await?;
 
     let account = crate::riot::get_player_info(username, tagline).await?;
+
+    // Check if account already exists
+    let mut existing_account = conn.query(
+        "SELECT id FROM accounts WHERE puuid = ?",
+        params![account.puuid.clone()],
+    ).await?;
+
+    if let Some(_) = existing_account.next().await? {
+        return Err(AccountError::AlreadyExists(account.puuid.clone()));
+    }
 
     conn.execute(
         "INSERT INTO accounts (puuid, username, tagline, region) VALUES (?, ?, ?, ?)",

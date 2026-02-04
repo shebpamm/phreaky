@@ -6,6 +6,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::db::account;
 use crate::api::ApiResult;
+use crate::riot::Region;
 
 async fn list_accounts() -> ApiResult<Json<Vec<account::Account>>> {
     let accounts = account::list_accounts().await?;
@@ -20,10 +21,10 @@ async fn get_account(Path(puuid): Path<String>) -> ApiResult<Json<account::Accou
 }
 
 #[derive(Serialize, Deserialize)]
-struct NewAccount {
-    username: String,
-    tagline: String,
-    region: String,
+pub struct NewAccount {
+    pub username: String,
+    pub tagline: String,
+    pub region: Region,
 }
 
 async fn add_account(Json(new_account): Json<NewAccount>) -> ApiResult<Json<account::Account>> {

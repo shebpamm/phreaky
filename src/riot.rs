@@ -1,8 +1,24 @@
 use color_eyre::eyre::Result;
 use serde::{Deserialize, Serialize};
 use crate::config::Config;
+use strum::{Display, EnumString};
 
 const RIOT_EU_BASE_URL: &str = "https://europe.api.riotgames.com";
+
+#[derive(clap::ValueEnum, Clone, Debug, Display, EnumString, Serialize, Deserialize, Eq, PartialEq)]
+#[strum(serialize_all = "UPPERCASE")]
+pub enum Region {
+    #[serde(alias = "na")]
+    NA,
+    #[serde(alias = "euw")]
+    EUW,
+    #[serde(alias = "eune")]
+    EUNE,
+    #[serde(alias = "kr")]
+    KR,
+    #[serde(alias = "jp")]
+    JP,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PlayerInfo {

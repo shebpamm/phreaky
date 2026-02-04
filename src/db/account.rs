@@ -5,6 +5,7 @@ use thiserror::Error;
 
 use crate::db::connection;
 use crate::db::utils;
+use crate::riot::Region;
 
 #[derive(Error, Debug)]
 pub enum AccountError {
@@ -26,7 +27,7 @@ pub struct Account {
     pub puuid: String,
     pub username: String,
     pub tagline: String,
-    pub region: String,
+    pub region: Region,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>
 }
@@ -40,7 +41,7 @@ impl TryFrom<libsql::Row> for Account {
             puuid: row.get(1)?,
             username: row.get(2)?,
             tagline: row.get(3)?,
-            region: row.get(4)?,
+            region: row.get::<String>(4)?.parse()?,
             created_at: utils::parse_date(&row.get::<String>(5)?)?,
             updated_at: utils::parse_date(&row.get::<String>(6)?)?,
         })
@@ -77,12 +78,10 @@ pub async fn get_account(puuid: &str) -> Result<Account> {
     }
 }
 
-pub async fn add_account(username: &str, tagline: &str, region: &str) -> Result<Account> {
+pub async fn add_account(username: &str, tagline: &str, region: &Region) -> Result<Account> {
     let conn = connection::get_db().await?;
 
     let account = crate::riot::get_player_info(username, tagline).await?;
-
-    let region = region.to_uppercase();
 
     // Check if account already exists
     let mut existing_account = conn.query(
@@ -96,7 +95,7 @@ pub async fn add_account(username: &str, tagline: &str, region: &str) -> Result<
 
     conn.execute(
         "INSERT INTO accounts (puuid, username, tagline, region) VALUES (?, ?, ?, ?)",
-        params![account.puuid.clone(), account.username, account.tagline, region],
+        params![account.puuid.clone(), account.username, account.tagline, region.to_string()],
     ).await?;
 
     get_account(&account.puuid).await
